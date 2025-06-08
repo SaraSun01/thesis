@@ -1,15 +1,15 @@
 import pandas as pd
 
-# ------------------- 配置项 -------------------
-RELATIONSHIP_FILE = "sct2_Relationship_Snapshot_NL1000146_20250331.txt"
-DESCRIPTION_FILE = "sct2_Description_Snapshot-nl_NL1000146_20250331.txt"  
-OUTPUT_FILE = "snomed_disease_terms_all.csv"
+# ------------------- configuration -------------------
+RELATIONSHIP_FILE = "sct2_Relationship_Snapshot_NL1000146_20250331.txt"  # Use the corresponding files in the SNOMED resource packages you obtained
+DESCRIPTION_FILE = "sct2_Description_Snapshot-nl_NL1000146_20250331.txt"  # Use the corresponding files in the SNOMED resource packages you obtained
+OUTPUT_FILE = "snomed_disease_terms_all.csv" # set the output file name, take disease as an example
 
-DISEASE_PARENTS = {"40733004","27624003","49601007","118940003","50043002","928000","74732009"}      # Disease (disorder)
-LANGUAGE_CODE = "nl"                # choose language
+DISEASE_PARENTS = {"40733004","27624003","49601007","118940003","50043002","928000","74732009"}      # Disease-related snomed ID
+LANGUAGE_CODE = "nl"                # choose the language
 # ---------------------------------------------
 
-# ------------------ 函数部分 -------------------
+# ------------------ function -------------------
 def get_all_descendants(parent_ids, rel_df):
     isa_df = rel_df[
         (rel_df["typeId"] == "116680003") & 
