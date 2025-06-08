@@ -1,30 +1,33 @@
 import pandas as pd
 from rapidfuzz import process, fuzz
 
-# === 参数设定 ===
+# This script is about generate a result about the type of fuzzy match between the term in hypothesis trancript and the term in gold transcript, 
+# both for medical terms and named entities
+
+# === Parameter settings ===
 CORRECT_THRESHOLD = 100
 SUBSTITUTION_THRESHOLD = 75
-MAX_NGRAM = 3  # 最大n-gram窗口
+MAX_NGRAM = 3  # Maximum n-gram window
 
-# === 工具函数：生成 n-gram token 片段 ===
+# === Utility function: Generate n-gram token fragments ===
 def generate_ngrams(tokens, max_n=3):
     ngrams = []
     for n in range(1, max_n + 1):
         ngrams += [' '.join(tokens[i:i+n]) for i in range(len(tokens) - n + 1)]
     return ngrams
 
-# === 加载对齐文本（含 gold + hyp） ===
+# === Loading Aligned Text（includes gold + hyp） ===
 aligned_df = pd.read_csv("03_kaldi_aligned_transcripts.csv")
 
-# === 加载 drug gold 匹配（filtered drug matches） ===
+# === Loading medical terms in gold transcript ===
 drug_df = pd.read_csv("01_gold_filtered_clinical_finding.csv")
-drug_df = drug_df[drug_df['type'] == 'clinical finding']
+drug_df = drug_df[drug_df['type'] == 'clinical finding'] #take clinical finding as an example
 drug_df = drug_df[['transcript_id', 'candidate']]
 
-# === 构建 gold drug term 字典: {uuid: [term1, term2, ...]} ===
+# === Constructing the gold medical term dictionary: {uuid: [term1, term2, ...]} ===
 gold_terms_dict = drug_df.groupby("transcript_id")["candidate"].apply(list).to_dict()
 
-# === 匹配结果列表 ===
+# === Matching result list ===
 results = []
 
 for _, row in aligned_df.iterrows():
@@ -54,9 +57,9 @@ for _, row in aligned_df.iterrows():
             "match_type": match_type
         })
 
-# === 保存输出 ===
+# === Saving as csv ===
 result_df = pd.DataFrame(results)
 result_df.to_csv("clinical_finding_term_fuzzy_match.csv", index=False)
-print("✅ 术语 fuzzy 匹配分析完成，输出文件: clinical_finding_term_fuzzy_match.csv")
+print("Finished! Saved as: clinical_finding_term_fuzzy_match.csv")
 
 
