@@ -2,13 +2,13 @@ import pandas as pd
 from jiwer import compute_measures, Compose, ToLowerCase, RemovePunctuation, RemoveMultipleSpaces, Strip
 import re
 
-# 读取对齐后的 transcript 文件
+# Read the alignment transcript
 df = pd.read_csv("03_all_k2_aligned_transcripts.csv")
 
-# 去除空内容
+# Remove empty content
 df = df[df['gold'].notna() & df['hyp'].notna() & df['gold'].str.strip().astype(bool) & df['hyp'].str.strip().astype(bool)]
 
-# 自定义规则函数
+# Custom rule functions
 def remove_nonverbal(text):
     return re.sub(r'\[.*?\]|\<.*?\>', '', text)
 
@@ -18,11 +18,11 @@ def normalize_spellings(text):
 def merge_hyphenated_words(text):
     return re.sub(r'(\w+)-(\w+)', r'\1\2', text)
 
-# 获取 gold 和 hyp 文本列表
+# Get gold and hyp text lists
 gold_texts = df['gold'].tolist()
 hyp_texts = df['hyp'].tolist()
 
-# 定义 transformation
+# Definite transformation
 transformation = Compose([
     ToLowerCase(),
     RemovePunctuation(),
@@ -33,16 +33,16 @@ transformation = Compose([
     lambda x: merge_hyphenated_words(x)
 ])
 
-# 清理文本
+# Clean the text
 gold_texts_clean = [transformation(t) for t in gold_texts]
 hyp_texts_clean = [transformation(t) for t in hyp_texts]
 
-# 拼接成大文本
+# Splice into large text
 gold_text = " ".join(gold_texts_clean)
 hyp_text = " ".join(hyp_texts_clean)
 truth_words = len(gold_text.split())
 
-# 计算 WER
+# Calculate WER
 measures = compute_measures(gold_text, hyp_text)
 overall_wer = measures['wer']
 substitutions = measures['substitutions']
@@ -50,7 +50,7 @@ insertions = measures['insertions']
 deletions = measures['deletions']
 hits = measures['hits']
 
-# 打印结果
+# Output
 print(f"=== Evaluation Results ===")
 print(f"Total Reference Words: {truth_words}")
 print(f"Overall WER: {overall_wer:.2%}")
