@@ -3,32 +3,32 @@ import pandas as pd
 from rapidfuzz import process, fuzz
 import spacy
 
-# === 文件路径 ===
-transcript_path = "all_gold_transcriptions_20250520.json"
-clinical_finding_path = "02_snomed_drug_terms_all.csv"
-output_path = "fuzzy_matched_output_drug.csv"
+# === input file path ===
+transcript_path = "all_gold_transcriptions_20250520.json" # input the path of your gold transciption
+clinical_finding_path = "02_snomed_drug_terms_all.csv" # input the file name of medical terms that filtered by SNOMED
+output_path = "fuzzy_matched_output_drug.csv"  # output file name
 
-# === 加载数据 ===
+# === load the file ===
 with open(transcript_path, "r", encoding="utf-8") as f:
     transcript_dict = json.load(f)
 
 clinical_finding_df = pd.read_csv(clinical_finding_path)
 
-# === 加载 spaCy 荷兰语模型 ===
+# === load spaCy model ===
 nlp = spacy.load("nl_core_news_sm")
 stopwords = nlp.Defaults.stop_words
 
-# === 分词 + 组合 1-gram 和 2-gram（含清洗） ===
+# ===Tokenization + combination of 1-gram and 2-gram (including cleaning) ===
 def generate_candidates(text):
     doc = nlp(text)
     tokens = [token.text for token in doc if token.is_alpha]
-    # 清洗：去掉 stopwords 和长度小于等于3的词
+    # Cleaning: Remove stopwords and words with length less than or equal to 3
     tokens = [t for t in tokens if t.lower() not in stopwords and len(t) > 3]
     one_grams = tokens
     two_grams = [' '.join([tokens[i], tokens[i+1]]) for i in range(len(tokens)-1)]
     return list(set(one_grams + two_grams))
 
-# === 执行模糊匹配（仅保留最高的前3个匹配） ===
+# === Perform fuzzy matching (keep only the top 3 matches) ===
 def fuzzy_match_terms(candidates, term_df, score_threshold=90):
     term_list = term_df["term"].tolist()
     match_pool = []
@@ -45,10 +45,10 @@ def fuzzy_match_terms(candidates, term_df, score_threshold=90):
                 "type": matched_row["type"],
                 "conceptId": matched_row["conceptId"]
             })
-    # 返回分数最高的前3个匹配
+    # Returns the top 3 matches with the highest scores
     return sorted(match_pool, key=lambda x: x["score"], reverse=True)[:3]
 
-# === 主循环：逐条 transcript 匹配 ===
+# === Main loop: utterance-by-utterance matching ===
 all_matches = []
 
 for uid, text in transcript_dict.items():
@@ -58,7 +58,7 @@ for uid, text in transcript_dict.items():
         m["transcript_id"] = uid
     all_matches.extend(clinical_finding_matches)
 
-# === 保存结果 ===
+# === save output ===
 matched_df = pd.DataFrame(all_matches)
 matched_df.to_csv(output_path, index=False)
 print(f"Finished!Saved as {output_path}")
