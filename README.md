@@ -49,7 +49,7 @@ Computes word-level WER (M-WER) for each type of term.
 ### 09_overall_CER.py
 Computes overall character error rate (CER) for full transcripts.
 
-10_overall_WER.py
+### 10_overall_WER.py
 Computes overall word error rate (WER) for full transcripts. 
 ---
 
