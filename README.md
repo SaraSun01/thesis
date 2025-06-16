@@ -17,6 +17,7 @@ Install them using pip:
 
 ```bash
 pip install pandas rapidfuzz spacy editdistance jiwer
+```
 
 ## File Overview and Execution Order
 Scripts should be executed in the following order (01–10):
